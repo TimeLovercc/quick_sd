@@ -596,10 +596,10 @@ def main():
     # across multiple gpus and only UNet2DConditionModel will get ZeRO sharded.
     with ContextManagers(deepspeed_zero_init_disabled_context_manager()):
         text_encoder = CLIPTextModel.from_pretrained(
-            args.pretrained_model_name_or_path, subfolder="text_encoder", revision=args.revision, variant=args.variant
+            args.pretrained_model_name_or_path, subfolder="text_encoder", revision=args.revision, 
         )
         vae = AutoencoderKL.from_pretrained(
-            args.pretrained_model_name_or_path, subfolder="vae", revision=args.revision, variant=args.variant
+            args.pretrained_model_name_or_path, subfolder="vae", revision=args.revision, 
         )
 
     unet = UNet2DConditionModel.from_pretrained(
@@ -614,7 +614,7 @@ def main():
     # Create EMA for the unet.
     if args.use_ema:
         ema_unet = UNet2DConditionModel.from_pretrained(
-            args.pretrained_model_name_or_path, subfolder="unet", revision=args.revision, variant=args.variant
+            args.pretrained_model_name_or_path, subfolder="unet", revision=args.revision, 
         )
         ema_unet = EMAModel(
             ema_unet.parameters(),
@@ -1102,7 +1102,7 @@ def main():
             vae=vae,
             unet=unet,
             revision=args.revision,
-            variant=args.variant,
+            ,
         )
         pipeline.save_pretrained(args.output_dir)
 
