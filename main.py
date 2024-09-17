@@ -25,8 +25,6 @@ from contextlib import nullcontext
 from pathlib import Path
 import warnings
 
-warnings.filterwarnings("ignore", category=FutureWarning)
-transformers.logging.set_verbosity_error()
 
 
 import accelerate
@@ -57,6 +55,8 @@ from diffusers.utils.hub_utils import load_or_create_model_card, populate_model_
 from diffusers.utils.import_utils import is_xformers_available
 from diffusers.utils.torch_utils import is_compiled_module
 
+warnings.filterwarnings("ignore", category=FutureWarning)
+transformers.logging.set_verbosity_error()
 
 
 
