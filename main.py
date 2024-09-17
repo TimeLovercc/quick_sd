@@ -23,6 +23,11 @@ import random
 import shutil
 from contextlib import nullcontext
 from pathlib import Path
+import warnings
+
+warnings.filterwarnings("ignore", category=FutureWarning)
+transformers.logging.set_verbosity_error()
+
 
 import accelerate
 import datasets

@@ -8,9 +8,8 @@ accelerate launch --mixed_precision="fp16"  --num_processes 2 --multi_gpu --main
     main.py \
   --pretrained_model_name_or_path="CompVis/stable-diffusion-v1-4" \
   --dataset_name="lambdalabs/naruto-blip-captions" \
-  --use_ema \
   --resolution=512 --center_crop --random_flip \
-  --train_batch_size=16 \
+  --train_batch_size=8 \
   --gradient_accumulation_steps=4 \
   --gradient_checkpointing \
   --max_train_steps=150000000 \
