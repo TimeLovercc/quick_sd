@@ -112,7 +112,6 @@ These are the key hyperparameters used during training:
 
 
 
-    model_description += wandb_info
 
     model_card = load_or_create_model_card(
         repo_id_or_path=repo_id,
@@ -166,20 +165,9 @@ def log_validation(vae, text_encoder, tokenizer, unet, args, accelerator, weight
         images.append(image)
 
     for tracker in accelerator.trackers:
-        if tracker.name == "tensorboard":
-            np_images = np.stack([np.asarray(img) for img in images])
-            tracker.writer.add_images("validation", np_images, epoch, dataformats="NHWC")
-        elif tracker.name == "wandb":
-            tracker.log(
-                {
-                    "validation": [
-                        wandb.Image(image, caption=f"{i}: {args.validation_prompts[i]}")
-                        for i, image in enumerate(images)
-                    ]
-                }
-            )
-        else:
-            logger.warning(f"image logging not implemented for {tracker.name}")
+        
+        np_images = np.stack([np.asarray(img) for img in images])
+        tracker.writer.add_images("validation", np_images, epoch, dataformats="NHWC")
 
     del pipeline
     torch.cuda.empty_cache()
@@ -1102,7 +1090,6 @@ def main():
             vae=vae,
             unet=unet,
             revision=args.revision,
-            ,
         )
         pipeline.save_pretrained(args.output_dir)
 
