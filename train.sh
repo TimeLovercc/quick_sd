@@ -4,7 +4,7 @@ export CUDA_VISIBLE_DEVICES=1,2,5
 export MODEL_NAME="CompVis/stable-diffusion-v1-4"
 export DATASET_NAME="lambdalabs/naruto-blip-captions"
 
-accelerate launch --mixed_precision="fp16"  train_text_to_image.py --num_processes 3 --multi_gpu --main_process_port 29292 \
+accelerate launch --mixed_precision="fp16"  train_text_to_image.py --num_processes 3 --multi_gpu --main_process_port=29292 \
   --pretrained_model_name_or_path="CompVis/stable-diffusion-v1-4" \
   --dataset_name="lambdalabs/naruto-blip-captions" \
   --use_ema \
