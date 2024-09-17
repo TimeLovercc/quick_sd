@@ -53,8 +53,6 @@ from diffusers.utils.import_utils import is_xformers_available
 from diffusers.utils.torch_utils import is_compiled_module
 
 
-if is_wandb_available():
-    import wandb
 
 
 # Will error if the minimal version of diffusers is not installed. Remove at your own risks.
@@ -110,16 +108,9 @@ These are the key hyperparameters used during training:
 * Mixed-precision: {args.mixed_precision}
 
 """
-    wandb_info = ""
-    if is_wandb_available():
-        wandb_run_url = None
-        if wandb.run is not None:
-            wandb_run_url = wandb.run.url
 
-    if wandb_run_url is not None:
-        wandb_info = f"""
-More information on all the CLI arguments and the environment are available on your [`wandb` run page]({wandb_run_url}).
-"""
+
+
 
     model_description += wandb_info
 
