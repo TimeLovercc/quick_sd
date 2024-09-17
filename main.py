@@ -140,7 +140,6 @@ def log_validation(vae, text_encoder, tokenizer, unet, args, accelerator, weight
         unet=accelerator.unwrap_model(unet),
         safety_checker=None,
         revision=args.revision,
-        variant=args.variant,
         torch_dtype=weight_dtype,
     )
     pipeline = pipeline.to(accelerator.device)
