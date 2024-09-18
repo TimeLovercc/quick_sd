@@ -11,8 +11,6 @@ python \
   --dataset_name="lambdalabs/naruto-blip-captions" \
   --resolution=512 --center_crop --random_flip \
   --train_batch_size=64 \
-  --gradient_accumulation_steps=4 \
-  --gradient_checkpointing \
   --max_train_steps=150000000 \
   --learning_rate=1e-05 \
   --max_grad_norm=1 \
