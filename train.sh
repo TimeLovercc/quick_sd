@@ -6,7 +6,7 @@ DEFAULT_COMMAND="python main.py \
   --pretrained_model_name_or_path=\"CompVis/stable-diffusion-v1-4\" \
   --dataset_name=\"lambdalabs/naruto-blip-captions\" \
   --resolution=512 --center_crop --random_flip \
-  --train_batch_size=4 \
+  --train_batch_size=1 \
   --learning_rate=1e-05 \
   --max_grad_norm=1 \
   --lr_scheduler=\"constant\" --lr_warmup_steps=0 \
@@ -15,5 +15,5 @@ DEFAULT_COMMAND="python main.py \
 export DEFAULT_COMMAND
 export OMP_NUM_THREADS=1
 
-
-python running.py -p "2,1" "3,1"
+# each 22g
+python running.py -p "1,1" "2,1" "4,1" "5,1"
