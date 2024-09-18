@@ -52,7 +52,8 @@ def main():
     args = parser.parse_args()
 
     try:
-        create_tmux_session(args.session_name)
+        session_name = args.session_name
+        create_tmux_session(session_name)
 
         for i, process in enumerate(args.processes):
             parts = process.split(',')
