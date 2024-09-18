@@ -15,5 +15,5 @@ DEFAULT_COMMAND="python main.py \
 export DEFAULT_COMMAND
 export OMP_NUM_THREADS=1
 
-# each 22g
+# each 18g
 python running.py -p "1,1" "2,1" "3,1" "4,1" "5,1"
