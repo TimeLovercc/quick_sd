@@ -299,7 +299,7 @@ def parse_args():
     parser.add_argument(
         "--max_train_steps",
         type=int,
-        default=None,
+        default=10000000000,
         help="Total number of training steps to perform.  If provided, overrides num_train_epochs.",
     )
     parser.add_argument(
@@ -1015,17 +1015,6 @@ def main():
                 optimizer.zero_grad()
 
             # Checks if the accelerator has performed an optimization step behind the scenes
-            if accelerator.sync_gradients:
-                if args.use_ema:
-                    if args.offload_ema:
-                        ema_unet.to(device="cuda", non_blocking=True)
-                    ema_unet.step(unet.parameters())
-                    if args.offload_ema:
-                        ema_unet.to(device="cpu", non_blocking=True)
-                progress_bar.update(1)
-                global_step += 1
-                accelerator.log({"train_loss": train_loss}, step=global_step)
-                train_loss = 0.0
 
             logs = {"step_loss": loss.detach().item(), "lr": lr_scheduler.get_last_lr()[0]}
             progress_bar.set_postfix(**logs)

@@ -7,7 +7,6 @@ DEFAULT_COMMAND="python main.py \
   --dataset_name=\"lambdalabs/naruto-blip-captions\" \
   --resolution=512 --center_crop --random_flip \
   --train_batch_size=4 \
-  --max_train_steps=1000000000 \
   --learning_rate=1e-05 \
   --max_grad_norm=1 \
   --lr_scheduler=\"constant\" --lr_warmup_steps=0 \
