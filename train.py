@@ -24,12 +24,6 @@ def run_tmux_command(command):
         print(f"Error running command {' '.join(command)}: {e}")
         return None
 
-def get_available_session_name(base_name):
-    for i in range(1, 101):  # Try up to 100 session names
-        session_name = f"{base_name}_{i}"
-        if not run_tmux_command(['tmux', 'has-session', '-t', session_name]):
-            return session_name
-    raise RuntimeError("Unable to find an available tmux session name")
 
 def check_and_kill_existing_session(session_name):
     # Check if the session exists
@@ -58,8 +52,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        session_name = get_available_session_name(args.session_name)
-        create_tmux_session(session_name)
+        create_tmux_session(args.session_name)
 
         for i, process in enumerate(args.processes):
             parts = process.split(',')
