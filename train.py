@@ -1,7 +1,7 @@
 import argparse
 import subprocess
-import shlex
 import os
+import time
 
 DEFAULT_COMMAND = os.environ.get('DEFAULT_COMMAND', """
 python main.py
@@ -16,46 +16,59 @@ python main.py
   --output_dir="output"
 """.replace("\n", " ").strip())
 
-def check_and_kill_existing_session(session_name):
-    # Check if the session exists
-    result = subprocess.run(['tmux', 'has-session', '-t', session_name], capture_output=True)
-    if result.returncode == 0:
-        print(f"Existing session '{session_name}' found. Killing it.")
-        subprocess.run(['tmux', 'kill-session', '-t', session_name])
-    else:
-        print(f"No existing session '{session_name}' found.")
+def run_tmux_command(command):
+    try:
+        result = subprocess.run(command, check=True, capture_output=True, text=True)
+        return result.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        print(f"Error running command {' '.join(command)}: {e}")
+        return None
+
+def get_available_session_name(base_name):
+    for i in range(1, 101):  # Try up to 100 session names
+        session_name = f"{base_name}_{i}"
+        if not run_tmux_command(['tmux', 'has-session', '-t', session_name]):
+            return session_name
+    raise RuntimeError("Unable to find an available tmux session name")
 
 def create_tmux_session(session_name):
-    check_and_kill_existing_session(session_name)
-    subprocess.run(['tmux', 'new-session', '-d', '-s', session_name])
+    result = run_tmux_command(['tmux', 'new-session', '-d', '-s', session_name])
+    if result is None:
+        raise RuntimeError(f"Failed to create tmux session {session_name}")
+    return session_name
 
 def run_command_in_tmux(session_name, window_name, command):
-    subprocess.run(['tmux', 'new-window', '-t', session_name, '-n', window_name])   
-    subprocess.run(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', 'conda activate torch', 'C-m'])
-    subprocess.run(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', 'cd ~/workspaces/quick_sd/', 'C-m'])
-    subprocess.run(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', command, 'C-m'])
+    run_tmux_command(['tmux', 'new-window', '-t', session_name, '-n', window_name])
+    run_tmux_command(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', 'conda activate torch', 'C-m'])
+    run_tmux_command(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', 'cd ~/workspaces/quick_sd/', 'C-m'])
+    run_tmux_command(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', command, 'C-m'])
 
 def main():
     parser = argparse.ArgumentParser(description="Run processes on different GPUs using tmux")
-    parser.add_argument('--session_name', default='sd', help='Name of the tmux session')
+    parser.add_argument('--session_name', default='gpu_session', help='Base name for the tmux session')
     parser.add_argument('-p', '--processes', nargs='+', help='List of processes in the format "gpu_rank,num_gpus[,command]"')
     
     args = parser.parse_args()
 
-    create_tmux_session(args.session_name)
+    try:
+        session_name = get_available_session_name(args.session_name)
+        create_tmux_session(session_name)
 
-    for i, process in enumerate(args.processes):
-        parts = process.split(',')
-        gpu_rank, num_gpus = parts[:2]
-        command = ','.join(parts[2:]) if len(parts) > 2 else DEFAULT_COMMAND
-        
-        cuda_visible_devices = ','.join(str(int(gpu_rank) + j) for j in range(int(num_gpus)))
-        full_command = f'CUDA_VISIBLE_DEVICES={cuda_visible_devices} {command}'
-        
-        window_name = f'gpu_{gpu_rank}'
-        run_command_in_tmux(args.session_name, window_name, full_command)
+        for i, process in enumerate(args.processes):
+            parts = process.split(',')
+            gpu_rank, num_gpus = parts[:2]
+            command = ','.join(parts[2:]) if len(parts) > 2 else DEFAULT_COMMAND
+            
+            cuda_visible_devices = ','.join(str(int(gpu_rank) + j) for j in range(int(num_gpus)))
+            full_command = f'CUDA_VISIBLE_DEVICES={cuda_visible_devices} {command}'
+            
+            window_name = f'gpu_{gpu_rank}'
+            run_command_in_tmux(session_name, window_name, full_command)
 
-    print(f"Tmux session '{args.session_name}' created with all processes. Use 'tmux attach-session -t {args.session_name}' to view.")
+        print(f"Tmux session '{session_name}' created with all processes. Use 'tmux attach-session -t {session_name}' to view.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        print("Please check your tmux sessions and manually clean up if necessary.")
 
 if __name__ == '__main__':
     main()
