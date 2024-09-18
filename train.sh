@@ -1,15 +1,15 @@
-export CUDA_VISIBLE_DEVICES=2,3
+export CUDA_VISIBLE_DEVICES=2
 
 
 export MODEL_NAME="CompVis/stable-diffusion-v1-4"
 export DATASET_NAME="lambdalabs/naruto-blip-captions"
 
-accelerate launch --mixed_precision="fp16"  --num_processes 2 --multi_gpu --main_process_port=29292 \
+accelerate launch --mixed_precision="fp16"  --num_processes 1 \
     main.py \
   --pretrained_model_name_or_path="CompVis/stable-diffusion-v1-4" \
   --dataset_name="lambdalabs/naruto-blip-captions" \
   --resolution=512 --center_crop --random_flip \
-  --train_batch_size=8 \
+  --train_batch_size=64 \
   --gradient_accumulation_steps=4 \
   --gradient_checkpointing \
   --max_train_steps=150000000 \
