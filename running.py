@@ -24,7 +24,6 @@ def run_tmux_command(command):
         print(f"Error running command {' '.join(command)}: {e}")
         return None
 
-
 def check_and_kill_existing_session(session_name):
     # Check if the session exists
     result = subprocess.run(['tmux', 'has-session', '-t', session_name], capture_output=True)
@@ -47,20 +46,28 @@ def run_command_in_tmux(session_name, window_name, command):
 def main():
     parser = argparse.ArgumentParser(description="Run processes on different GPUs using tmux")
     parser.add_argument('--session_name', default='sd', help='Base name for the tmux session')
-    parser.add_argument('-p', '--processes', nargs='+', help='List of processes in the format "gpu_rank,num_gpus[,command]"')
-    
+    parser.add_argument('-p', '--processes', nargs='+', type=int, help='List of processes in the format "gpu_rank[,command]"')
+    parser.add_argument('-b', '--batch_sizes', nargs='+', type=int, help='List of batch sizes for each GPU')
+
     args = parser.parse_args()
+
+    if args.batch_sizes and len(args.batch_sizes) != len(args.processes):
+        print("Error: The number of batch sizes must match the number of processes.")
+        return
 
     try:
         session_name = args.session_name
         create_tmux_session(session_name)
 
         for i, process in enumerate(args.processes):
-            parts = process.split(',')
-            gpu_rank, num_gpus = parts[:2]
-            command = ','.join(parts[2:]) if len(parts) > 2 else DEFAULT_COMMAND
+            gpu_rank = process
+            command = DEFAULT_COMMAND
             
-            cuda_visible_devices = ','.join(str(int(gpu_rank) + j) for j in range(int(num_gpus)))
+            # Inject respective batch size into the command
+            batch_size = args.batch_sizes[i] if args.batch_sizes else 4
+            command = command.replace('--train_batch_size=4', f'--train_batch_size={batch_size}')
+            
+            cuda_visible_devices = str(gpu_rank)
             full_command = f'CUDA_VISIBLE_DEVICES={cuda_visible_devices} OMP_NUM_THREADS=1 {command}'
             
             window_name = f'gpu_{gpu_rank}'
