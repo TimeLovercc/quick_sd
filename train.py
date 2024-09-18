@@ -67,7 +67,7 @@ def main():
             command = ','.join(parts[2:]) if len(parts) > 2 else DEFAULT_COMMAND
             
             cuda_visible_devices = ','.join(str(int(gpu_rank) + j) for j in range(int(num_gpus)))
-            full_command = f'CUDA_VISIBLE_DEVICES={cuda_visible_devices} {command}'
+            full_command = f'CUDA_VISIBLE_DEVICES={cuda_visible_devices} OMP_NUM_THREADS=1 {command}'
             
             window_name = f'gpu_{gpu_rank}'
             run_command_in_tmux(session_name, window_name, full_command)
