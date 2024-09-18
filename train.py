@@ -1,0 +1,49 @@
+import argparse
+import subprocess
+import shlex
+import os
+
+DEFAULT_COMMAND = os.environ.get('DEFAULT_COMMAND', """
+python main.py
+  --pretrained_model_name_or_path="CompVis/stable-diffusion-v1-4"
+  --dataset_name="lambdalabs/naruto-blip-captions"
+  --resolution=512 --center_crop --random_flip
+  --train_batch_size=4
+  --max_train_steps=1000000000
+  --learning_rate=1e-05
+  --max_grad_norm=1
+  --lr_scheduler="constant" --lr_warmup_steps=0
+  --output_dir="output"
+""".replace("\n", " ").strip())
+
+def create_tmux_session(session_name):
+    subprocess.run(['tmux', 'new-session', '-d', '-s', session_name])
+
+def run_command_in_tmux(session_name, window_name, command):
+    subprocess.run(['tmux', 'new-window', '-t', session_name, '-n', window_name])
+    subprocess.run(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', command, 'C-m'])
+
+def main():
+    parser = argparse.ArgumentParser(description="Run processes on different GPUs using tmux")
+    parser.add_argument('--session_name', default='gpu_session', help='Name of the tmux session')
+    parser.add_argument('-p', '--processes', nargs='+', help='List of processes in the format "gpu_rank,num_gpus[,command]"')
+    
+    args = parser.parse_args()
+
+    create_tmux_session(args.session_name)
+
+    for i, process in enumerate(args.processes):
+        parts = process.split(',')
+        gpu_rank, num_gpus = parts[:2]
+        command = ','.join(parts[2:]) if len(parts) > 2 else DEFAULT_COMMAND
+        
+        cuda_visible_devices = ','.join(str(int(gpu_rank) + j) for j in range(int(num_gpus)))
+        full_command = f'CUDA_VISIBLE_DEVICES={cuda_visible_devices} {command}'
+        
+        window_name = f'gpu_{gpu_rank}'
+        run_command_in_tmux(args.session_name, window_name, full_command)
+
+    print(f"Tmux session '{args.session_name}' created with all processes. Use 'tmux attach-session -t {args.session_name}' to view.")
+
+if __name__ == '__main__':
+    main()
