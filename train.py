@@ -16,7 +16,17 @@ python main.py
   --output_dir="output"
 """.replace("\n", " ").strip())
 
+def check_and_kill_existing_session(session_name):
+    # Check if the session exists
+    result = subprocess.run(['tmux', 'has-session', '-t', session_name], capture_output=True)
+    if result.returncode == 0:
+        print(f"Existing session '{session_name}' found. Killing it.")
+        subprocess.run(['tmux', 'kill-session', '-t', session_name])
+    else:
+        print(f"No existing session '{session_name}' found.")
+
 def create_tmux_session(session_name):
+    check_and_kill_existing_session(session_name)
     subprocess.run(['tmux', 'new-session', '-d', '-s', session_name])
 
 def run_command_in_tmux(session_name, window_name, command):

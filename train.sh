@@ -14,7 +14,7 @@ DEFAULT_COMMAND="python main.py \
   --output_dir=\"output\""
 
 export DEFAULT_COMMAND
-# export OMP_NUM_THREADS=1
+export OMP_NUM_THREADS=1
 
 
 python train.py -p "2,2" "3,1"
