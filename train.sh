@@ -5,7 +5,7 @@ export MODEL_NAME="CompVis/stable-diffusion-v1-4"
 export DATASET_NAME="lambdalabs/naruto-blip-captions"
 
 # accelerate launch --mixed_precision="fp16"  --num_processes 1 --main_process_port=29292 \
-python
+python \
     main.py \
   --pretrained_model_name_or_path="CompVis/stable-diffusion-v1-4" \
   --dataset_name="lambdalabs/naruto-blip-captions" \
