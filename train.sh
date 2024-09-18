@@ -1,5 +1,5 @@
 export CUDA_VISIBLE_DEVICES=2
-
+export OMP_NUM_THREADS=1
 
 export MODEL_NAME="CompVis/stable-diffusion-v1-4"
 export DATASET_NAME="lambdalabs/naruto-blip-captions"
