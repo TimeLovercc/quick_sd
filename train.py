@@ -31,11 +31,18 @@ def get_available_session_name(base_name):
             return session_name
     raise RuntimeError("Unable to find an available tmux session name")
 
+def check_and_kill_existing_session(session_name):
+    # Check if the session exists
+    result = subprocess.run(['tmux', 'has-session', '-t', session_name], capture_output=True)
+    if result.returncode == 0:
+        print(f"Existing session '{session_name}' found. Killing it.")
+        subprocess.run(['tmux', 'kill-session', '-t', session_name])
+    else:
+        print(f"No existing session '{session_name}' found.")
+
 def create_tmux_session(session_name):
-    result = run_tmux_command(['tmux', 'new-session', '-d', '-s', session_name])
-    if result is None:
-        raise RuntimeError(f"Failed to create tmux session {session_name}")
-    return session_name
+    check_and_kill_existing_session(session_name)
+    subprocess.run(['tmux', 'new-session', '-d', '-s', session_name])
 
 def run_command_in_tmux(session_name, window_name, command):
     run_tmux_command(['tmux', 'new-window', '-t', session_name, '-n', window_name])
