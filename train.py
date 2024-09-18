@@ -20,12 +20,14 @@ def create_tmux_session(session_name):
     subprocess.run(['tmux', 'new-session', '-d', '-s', session_name])
 
 def run_command_in_tmux(session_name, window_name, command):
-    subprocess.run(['tmux', 'new-window', '-t', session_name, '-n', window_name])
+    subprocess.run(['tmux', 'new-window', '-t', session_name, '-n', window_name])   
+    subprocess.run(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', 'conda activate torch', 'C-m'])
+    subprocess.run(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', 'cd ~/workspaces/quick_sd/', 'C-m'])
     subprocess.run(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', command, 'C-m'])
 
 def main():
     parser = argparse.ArgumentParser(description="Run processes on different GPUs using tmux")
-    parser.add_argument('--session_name', default='gpu_session', help='Name of the tmux session')
+    parser.add_argument('--session_name', default='sd', help='Name of the tmux session')
     parser.add_argument('-p', '--processes', nargs='+', help='List of processes in the format "gpu_rank,num_gpus[,command]"')
     
     args = parser.parse_args()
