@@ -45,7 +45,7 @@ def run_command_in_tmux(session_name, window_name, command):
 
 def main():
     parser = argparse.ArgumentParser(description="Run processes on different GPUs using tmux")
-    parser.add_argument('--session_name', default='gpu_session', help='Base name for the tmux session')
+    parser.add_argument('--session_name', default='sd', help='Base name for the tmux session')
     parser.add_argument('-p', '--processes', nargs='+', help='List of processes in the format "gpu_rank,num_gpus[,command]"')
     
     args = parser.parse_args()
@@ -65,7 +65,7 @@ def main():
             window_name = f'gpu_{gpu_rank}'
             run_command_in_tmux(session_name, window_name, full_command)
 
-        print(f"Tmux session '{session_name}' created with all processes. Use 'tmux attach-session -t {session_name}' to view.")
+        print(f"Tmux session '{session_name}' created with all processes. Use 'tmux a -t {session_name}' to view.")
     except Exception as e:
         print(f"An error occurred: {e}")
         print("Please check your tmux sessions and manually clean up if necessary.")
