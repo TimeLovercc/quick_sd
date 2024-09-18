@@ -10,7 +10,7 @@ python \
   --pretrained_model_name_or_path="CompVis/stable-diffusion-v1-4" \
   --dataset_name="lambdalabs/naruto-blip-captions" \
   --resolution=512 --center_crop --random_flip \
-  --train_batch_size=64 \
+  --train_batch_size=32 \
   --max_train_steps=150000000 \
   --learning_rate=1e-05 \
   --max_grad_norm=1 \
