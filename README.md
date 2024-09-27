@@ -12,5 +12,5 @@ bash train.sh
 
 # keep connection alive use tmux
 ```
-
+python client.py
 ```
