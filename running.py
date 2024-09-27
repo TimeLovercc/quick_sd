@@ -39,8 +39,9 @@ def create_tmux_session(session_name):
     check_and_kill_existing_session(session_name)
     subprocess.run(['tmux', 'new-session', '-d', '-s', session_name])
 
-def run_command_in_tmux(session_name, window_name, command):
-    run_tmux_command(['tmux', 'new-window', '-t', session_name, '-n', window_name])
+def run_command_in_tmux(session_name, window_name, command, first):
+    if not first:
+        run_tmux_command(['tmux', 'new-window', '-t', session_name, '-n', window_name])
     run_tmux_command(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', 'conda activate torch', 'C-m'])
     run_tmux_command(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', 'cd ~/workspaces/quick_sd/', 'C-m'])
     run_tmux_command(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', command, 'C-m'])
@@ -73,7 +74,8 @@ def main():
             full_command = f'CUDA_VISIBLE_DEVICES={cuda_visible_devices} OMP_NUM_THREADS=1 {command}'
             
             window_name = f'gpu_{gpu_rank}'
-            run_command_in_tmux(session_name, window_name, full_command)
+            first = i == 0
+            run_command_in_tmux(session_name, window_name, full_command, first)
 
         print(f"Tmux session '{session_name}' created with all processes. Use 'tmux a -t {session_name}' to view.")
     except Exception as e:
