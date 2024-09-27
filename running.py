@@ -4,6 +4,9 @@ import os
 import time
 
 DEFAULT_COMMAND = os.environ.get('DEFAULT_COMMAND', """
+OPENBLAS_NUM_THREADS=1
+OMP_NUM_THREADS=1 
+MKL_NUM_THREADS=1
 python main.py
   --pretrained_model_name_or_path="CompVis/stable-diffusion-v1-4"
   --dataset_name="lambdalabs/naruto-blip-captions"
