@@ -9,3 +9,8 @@ conda activate torch
 bash train.sh
 
 ```
+
+# keep connection alive use tmux
+```
+
+```
