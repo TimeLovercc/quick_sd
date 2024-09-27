@@ -43,7 +43,7 @@ def run_command_in_tmux(session_name, window_name, command, first):
     if not first:
         run_tmux_command(['tmux', 'new-window', '-t', session_name, '-n', window_name])
     else:
-        run_tmux_command(['tmux', 'rename-window', '-t', window_name])
+        run_tmux_command(['tmux', 'rename-window', '-t', f'{session_name}:0', window_name])
     run_tmux_command(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', 'conda activate torch', 'C-m'])
     run_tmux_command(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', 'cd ~/workspaces/quick_sd/', 'C-m'])
     run_tmux_command(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', command, 'C-m'])
