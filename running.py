@@ -27,7 +27,6 @@ def run_tmux_command(command):
         return None
 
 def check_and_kill_existing_session(session_name):
-    # Check if the session exists
     result = subprocess.run(['tmux', 'has-session', '-t', session_name], capture_output=True)
     if result.returncode == 0:
         print(f"Existing session '{session_name}' found. Killing it.")
@@ -39,14 +38,18 @@ def create_tmux_session(session_name):
     check_and_kill_existing_session(session_name)
     subprocess.run(['tmux', 'new-session', '-d', '-s', session_name])
 
-def run_command_in_tmux(session_name, window_name, command, first):
-    if not first:
-        run_tmux_command(['tmux', 'new-window', '-t', session_name, '-n', window_name])
-    else:
-        run_tmux_command(['tmux', 'rename-window', '-t', f'{session_name}:0', window_name])
-    run_tmux_command(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', 'conda activate torch', 'C-m'])
-    run_tmux_command(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', 'cd ~/workspaces/quick_sd/', 'C-m'])
-    run_tmux_command(['tmux', 'send-keys', '-t', f'{session_name}:{window_name}', command, 'C-m'])
+def run_commands_in_tmux(session_name, commands):
+    # Initial setup
+    run_tmux_command(['tmux', 'send-keys', '-t', f'{session_name}:0', 'conda activate torch', 'C-m'])
+    run_tmux_command(['tmux', 'send-keys', '-t', f'{session_name}:0', 'cd ~/workspaces/quick_sd/', 'C-m'])
+    
+    # Run all commands in background except the last one
+    for command in commands[:-1]:
+        run_tmux_command(['tmux', 'send-keys', '-t', f'{session_name}:0', f'{command} &', 'C-m'])
+    
+    # Run the last command in foreground
+    if commands:
+        run_tmux_command(['tmux', 'send-keys', '-t', f'{session_name}:0', commands[-1], 'C-m'])
 
 def main():
     parser = argparse.ArgumentParser(description="Run processes on different GPUs using tmux")
@@ -64,6 +67,7 @@ def main():
         session_name = args.session_name
         create_tmux_session(session_name)
 
+        commands = []
         for i, process in enumerate(args.processes):
             gpu_rank = process
             command = DEFAULT_COMMAND
@@ -74,12 +78,10 @@ def main():
             
             cuda_visible_devices = str(gpu_rank)
             full_command = f'CUDA_VISIBLE_DEVICES={cuda_visible_devices} OMP_NUM_THREADS=1 {command}'
-            
-            window_name = f'gpu_{gpu_rank}'
-            first = i == 0
-            run_command_in_tmux(session_name, window_name, full_command, first)
+            commands.append(full_command)
 
-        print(f"Tmux session '{session_name}' created with all processes. Use 'tmux a -t {session_name}' to view.")
+        run_commands_in_tmux(session_name, commands)
+        print(f"Tmux session '{session_name}' created with all processes running in single window. Use 'tmux a -t {session_name}' to view.")
     except Exception as e:
         print(f"An error occurred: {e}")
         print("Please check your tmux sessions and manually clean up if necessary.")
