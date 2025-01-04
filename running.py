@@ -17,16 +17,29 @@ python main.py
   --output_dir="output"
 """.replace("\n", " ").strip())
 
-def start_process(command):
-    """Start a process in the background using nohup"""
-    with open(os.devnull, 'w') as devnull:
-        process = subprocess.Popen(
-            f"nohup {command} > /dev/null 2>&1 &",
-            shell=True,
-            stdout=devnull,
-            stderr=devnull,
-            preexec_fn=os.setpgrp
-        )
+def start_process(command, conda_env="torch"):
+    """Start a process in the background with conda environment"""
+    # Get the path to conda executable
+    conda_path = os.path.expanduser("~/miniconda3/bin/conda")
+    if not os.path.exists(conda_path):
+        conda_path = os.path.expanduser("~/anaconda3/bin/conda")
+    
+    # Create the full command with conda activation
+    full_command = f"""
+        source {os.path.dirname(conda_path)}/activate {conda_env} && \
+        cd {os.getcwd()} && \
+        {command}
+    """
+    
+    # Start the process
+    process = subprocess.Popen(
+        full_command,
+        shell=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        preexec_fn=os.setpgrp,
+        executable='/bin/bash'  # Explicitly use bash
+    )
     return process.pid
 
 def main():
@@ -35,6 +48,8 @@ def main():
                       help='List of GPU ranks to use')
     parser.add_argument('-b', '--batch_sizes', nargs='+', type=int,
                       help='List of batch sizes for each GPU')
+    parser.add_argument('--conda_env', default='torch',
+                      help='Conda environment name (default: torch)')
 
     args = parser.parse_args()
 
@@ -53,9 +68,9 @@ def main():
             cuda_visible_devices = str(gpu_rank)
             full_command = f'CUDA_VISIBLE_DEVICES={cuda_visible_devices} OMP_NUM_THREADS=1 {command}'
             
-            pid = start_process(full_command)
+            pid = start_process(full_command, args.conda_env)
             print(f"Started process on GPU {gpu_rank} with PID {pid}")
-
+            
     except Exception as e:
         print(f"An error occurred: {e}")
 
