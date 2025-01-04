@@ -9,11 +9,15 @@ def run_command(gpu_rank, batch_size=4):
     env = os.environ.copy()
     env['CUDA_VISIBLE_DEVICES'] = str(gpu_rank)
     
-    process = subprocess.Popen(
-        cmd,
-        shell=True,
-        env=env,
-    )
+    with open(os.devnull, 'w') as DEVNULL:
+        process = subprocess.Popen(
+            cmd,
+            shell=True,
+            env=env,
+            stdout=DEVNULL,
+            stderr=DEVNULL,
+            preexec_fn=os.setpgrp
+        )
     return process.pid
 
 def main():
